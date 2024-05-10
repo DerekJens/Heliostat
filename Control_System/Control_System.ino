@@ -7,18 +7,21 @@
 // number of decimal digits to print
 const uint8_t digits = 3;
 
+bool hasRun = false;
 // program begins
 Servo elevationServo;
 Servo azimuthServo;
 DS3232RTC RTC;
 
-SolarPosition SanDiego(32.7157, 117.1611);
-float mirrorAzimuth = 180;
+SolarPosition SanDiego(32.7157, -117.1611);
+float mirrorAzimuth = 90;
 float mirrorElevation = 0;
+float targetAzimuth;
+float targetElevation;
 
 void setup()
 {
-  elevationServo.attach(9);
+  elevationServo.attach(11);
   azimuthServo.attach(10);
   Serial.begin(9600);
   RTC.begin();
@@ -34,15 +37,24 @@ void loop()
   //Have set target angle
   //stepper angle should be (Sun angle + target angle)/2
   //delay (15 min)
-
-
   float solarAzimuth = SanDiego.getSolarAzimuth();
   float solarElevation = SanDiego.getSolarElevation();
 
-  float targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
-  float targetElevation = 2*mirrorElevation - solarElevation;
+
+  if(hasRun == false){
+    targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
+    targetElevation = 2*mirrorElevation - solarElevation;
+    hasRun = true;
+  }
+  mirrorElevation = (targetElevation + solarElevation)/2;
+  mirrorAzimuth = (targetAzimuth + solarElevation)/2;
+
+  elevationServo.write(mirrorElevation);
+  azimuthServo.write(mirrorAzimuth - 90);
+
   printSolarPosition(SanDiego.getSolarPosition(), digits);
   printTime(RTC.get());
+  
   delay(15000);
   
 }
