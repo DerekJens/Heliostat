@@ -54,15 +54,6 @@ void loop()
   float solarAzimuth = SanDiego.getSolarAzimuth();
   float solarElevation = SanDiego.getSolarElevation();
 
-  setMirror();
-
-  /*if(!hasRun){
-    Serial.println("running:");
-    targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
-    targetElevation = 2*mirrorElevation - solarElevation;
-    hasRun = true;
-  }
-  */
   if(0 < solarElevation){
     mirrorElevation = (targetElevation + solarElevation)/2;
     mirrorAzimuth = (targetAzimuth + solarAzimuth)/2;
@@ -148,40 +139,46 @@ void setMirror(){
   Serial.println("Setting mirror:");
   while(!digitalRead(setPin)){
     if (!digitalRead(upPin)){
-      mirrorElevation = mirrorElevation + 5;
+      mirrorElevation = mirrorElevation + 10;
       elevationServo.write(mirrorElevation);
       Serial.println("move up");
-      delay(500);
+      delay(100);
     }
     else if(!digitalRead(downPin)){
-      mirrorElevation = mirrorElevation - 5;
+      mirrorElevation = mirrorElevation - 10;
       elevationServo.write(mirrorElevation);
       Serial.println("move down");
-      delay(500);
+      delay(100);
     }
     else if(!digitalRead(leftPin)){
-      mirrorAzimuth = mirrorAzimuth - 5;
+      mirrorAzimuth = mirrorAzimuth - 10;
       azimuthServo.write(-mirrorAzimuth+270);
       Serial.println("move left");
-      delay(500);
+      delay(100);
     }
     else if(!digitalRead(rightPin)){
-      mirrorAzimuth = mirrorAzimuth + 5;
+      mirrorAzimuth = mirrorAzimuth + 10;
       azimuthServo.write(-mirrorAzimuth+270);
       Serial.println("move right");
-      delay(500);
+      delay(100);
     }
-    targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
-    targetElevation = 2*mirrorElevation - solarElevation;
   }
+  targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
+  targetElevation = 2*mirrorElevation - solarElevation;
 }
 
 void resetMirror(){
   Serial.println("resetting Mirror");
-  while(resetPin == LOW){
-    azimuthServo.write(180);
+  float solarAzimuth = SanDiego.getSolarAzimuth();
+  float solarElevation = SanDiego.getSolarElevation();
+  while(!digitalRead(resetPin)){
+    azimuthServo.write(90);
     elevationServo.write(0);
+    mirrorElevation = 0;
+    mirrorAzimuth = 180;
     delay(1000);
   }
+  targetAzimuth = 2*mirrorAzimuth - solarAzimuth;
+  targetElevation = 2*mirrorElevation - solarElevation;
 }
 
